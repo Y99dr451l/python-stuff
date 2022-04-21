@@ -1,18 +1,21 @@
-import PIL.Image
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import numpy
+import io
 import sys
 
-#threshold = (190, 154, 42)
-threshold = (130, 130, 130)
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy
+import PIL.Image
+from scipy.ndimage import convolve
+
 xorder = 1
 yorder = 1
 minlength = 3
 xoffsetstep = 0
 yoffsetstep = 0.333
-linewidth = 0.17
-dpi = 2500
+linewidth = 0.12
+mean = True
+#edge = True
+#edgethreshold = 120
 
 try:
     image = PIL.Image.open(sys.argv[1])
@@ -33,8 +36,10 @@ for i in range(min(image.height, xorder+1)):
             directionvalues.append(r)
             directions.append([i, j])
 '''
-directions = [[1,1]] # override
+directions = [[1, 1]] # override
 lines = [[], [], []]
+
+threshold = [numpy.mean(_) for _ in bands] if mean else (127, 127, 127)
 
 # identify all lines to be drawn for each band
 def checklines(x, y, i, j):
@@ -74,6 +79,7 @@ for [i, j] in directions:
             if x < image.height: checklines(x, y, i, j)  
 
 # draw lines
+plt.figure(figsize=(10, 10*image.height/image.width), dpi=image.width)#, bbox_inches='tight')
 plt.xlim(0, image.width)
 plt.ylim(0, image.height)
 plt.gca().set_aspect('equal')
@@ -91,4 +97,23 @@ for channel in range(len(lines)):
     yoffset = channel*yoffsetstep
     for line in lines[channel]: plt.plot([line[0][1]+xoffset, line[1][1]+xoffset], [line[0][0]+yoffset, line[1][0]+yoffset], color=color, linewidth=linewidth)
 output = 'lines/' + ('output.png' if len(sys.argv) < 3 else sys.argv[2])
-plt.savefig(output, bbox_inches='tight', dpi=dpi)
+
+# if edge:
+#     edgearr = numpy.array([[[1, 1, 1], [1, 1, 1], [1, 1, 1]], [[1, 1, 1], [-8, -8, -8], [1, 1, 1]], [[1, 1, 1], [1, 1, 1], [1, 1, 1]]])
+#     edgeimg = PIL.Image.fromarray(convolve(arr, edgearr)).convert("RGBA")
+#     datas = edgeimg.getdata()
+#     newData = []
+#     for item in datas:
+#         if item[0] > edgethreshold and item[1] > edgethreshold and item[2] > edgethreshold: newData.append((255, 255, 255, 0))
+#         else: newData.append(item)
+#     edgeimg.putdata(newData)
+#     buf = io.BytesIO()
+#     plt.savefig(buf)
+#     buf.seek(0)
+#     outimage = PIL.Image.open(buf).convert('RGBA')
+#     edgeimg.thumbnail(outimage.size, PIL.Image.ANTIALIAS)
+#     outimage.paste(edgeimg, (0, 0), edgeimg)
+#     outimage.save(output)
+# else:
+
+plt.savefig(output)
