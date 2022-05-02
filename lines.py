@@ -6,8 +6,8 @@ import numpy
 import PIL.Image
 
 minlength = 3
-dpifactor = 4
-mean = True
+dpifactor = 12
+mean = False
 
 try:
     image = PIL.Image.open(sys.argv[1])
@@ -15,7 +15,7 @@ try:
 except Exception as e: print(e); exit()
 bandimgs = image.split()
 bands = [numpy.array(_) for _ in bandimgs]
-threshold = [numpy.mean(_) for _ in bands] if mean else (127, 127, 127)
+threshold = [numpy.mean(_) for _ in bands] if mean else (190, 154, 42)
 
 '''
 # find all possible directions for the input size, limited by xorder and yorder
@@ -84,7 +84,7 @@ for _ in range(len(lines)):
         case 0: color='black' if len(bands) == 1 else 'red'
         case 1: color='green'
         case 2: color='blue'
-    for __ in lines[_]: plt.plot([__[0][1], __[1][1]], [__[0][0]+_*0.333, __[1][0]+_*0.333], color=color, linewidth=72/image.width)
+    for __ in lines[_]: plt.plot([__[0][1], __[1][1]], [__[0][0]+_*0.333, __[1][0]+_*0.333], color=color, linewidth=dpifactor*13/image.width)
 output = 'lines/' + ('output.png' if len(sys.argv) < 3 else sys.argv[2])
 
 plt.savefig(output)
